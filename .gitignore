@@ -133,3 +133,5 @@ dmypy.json
 *.csv
 *.h5
 *.xlsx
+*.ipynb
+*.json
