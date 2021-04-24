@@ -2,8 +2,8 @@ import os
 
 import pandas as pd
 
-ACTIVITIES = 'Tätigkeit'
-HOURS = 'Stunden'
+ACTIVITIES = 'GeraetID'
+HOURS = 'Anzahl'
 
 
 def one_hot_taetigkeiten(df: pd.DataFrame, prefix: str = ACTIVITIES) -> pd.DataFrame:
