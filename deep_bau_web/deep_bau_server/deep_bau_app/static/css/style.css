@@ -1,0 +1,17 @@
+.container-fluid.nav {
+  margin-right: auto;
+  margin-left: auto;
+  max-width: 80%; /* or 950px */
+  padding-right: 0;
+}
+.container-fluid.con {
+  margin-right: auto;
+  margin-left: auto;
+  max-width: 80%; /* or 950px */
+  margin-top: 20px;
+}
+.sticky-nav {
+  position: sticky;
+  top: 0;
+  z-index:1;
+}

@@ -1,0 +1,28 @@
+{% load static %}
+<!doctype html>
+
+<nav class="navbar {% if 'app' in request.path %} sticky-nav ms-auto {% endif %} navbar-expand-lg navbar-light" style="color: #003374;">
+    <div class="container-fluid nav">
+      <a class="navbar-brand" {% if 'app' in request.path %} href="{% url 'predict' %} {% else %} href="{% url 'index' %} {% endif %} style="color:#003374;font-size:18">
+        <b>deep-bau</b>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          {% if 'app' in request.path %}
+            <li class="nav-item">
+              <a class="nav-link" href="#">Lean Construction</a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              {% if 'app' in request.path %}<a class="nav-link" href="#" style="color:#0d6efd;">APP</a>
+              {% else %} <a class="nav-link" href="{% url 'predict' %}">APP</a> 
+              {% endif %}
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav> 

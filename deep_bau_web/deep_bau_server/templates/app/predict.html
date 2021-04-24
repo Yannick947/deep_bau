@@ -1,0 +1,66 @@
+{% extends 'app/app_base.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="row d-flex justify-content-center">
+      <div class="col-md-3">
+          <div class="card">
+              <h5 class="card-header">Prediction</h5>
+              <div class="card-body">
+                <form action="{% url 'predict' %}" method="post">
+                <label for="team_name">Enter name: </label>
+                <div class="form-group">
+                  <select class="form-control" name="model" id="model">
+                    <option value=0 selected disabled hidden>Select Project</option>
+                    {% for project in projects %}
+                      <option value=1>{{project.name}}</option>
+                    {% endfor %}
+                  </select>
+                </div> </br>
+                <div class="form-group"> 
+                  <input type="date" class="form-control" id="data" placeholder="Json Format"> 
+                </div> 
+              </div>
+              <div class="card-footer d-flex justify-content-center">
+                <input type="submit" value="Predict" class="btn btn-primary">
+                  </div>
+                </form>
+            </div>
+      </div>
+
+      <div class="col-md-9">
+          <div class="card">
+              <h5 class="card-header">Lean Construction Chart</h5>
+              <div class="card-body">
+                  <div id="output"></div>
+              </div>
+            </div>
+      </div>
+  </div>
+</div>
+
+<script>
+    $("#input").submit(function (e) {//c
+      e.preventDefault();
+      var jsonData = {};
+  
+      var data = $('#data').val();//c
+
+      jsonData["data"] = data;
+      jsonData["csrfmiddlewaretoken"] = "{{csrf_token}}";
+
+      $.ajax({
+        type: 'POST',
+        url: "{% url 'predict' %}",//c
+        data: JSON.stringify(jsonData),
+        success: function (response) {
+          $("#output").html(response);
+  
+        },
+        error: function (response) {
+          alert("error");
+        }
+      })
+    })
+</script>
+{% endblock content %}
