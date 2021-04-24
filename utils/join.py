@@ -17,21 +17,24 @@ filenames = glob(ROOT_PATH +'join/*.csv')
 dfs = [pd.read_csv(f, index_col=0) for f in filenames]
 
 working_hours = pd.read_csv(ROOT_PATH + 'aggregated_by_day.csv', index_col=0)
+working_hours.rename(columns={'Projekt Id': 'BaustelleID'}, inplace=True)
+
 
 #%%
-nan_value = 0
+first = pd.merge(working_hours, dfs[0].drop_duplicates(["Datum", "BaustelleID"], keep='last'), how="left", on=["Datum", "BaustelleID"], validate="one_to_one")
 
-dfs.insert(0, working_hours)
+second = pd.merge(first, dfs[1].drop_duplicates(["Datum", "BaustelleID"], keep='last'), how="left", on=["Datum", "BaustelleID"], validate="one_to_one")
+
+third = pd.merge(second, dfs[2].drop_duplicates(["Datum", "BaustelleID"], keep='last'), how="left", on=["Datum", "BaustelleID"], validate="one_to_one")
+
+merged = pd.merge(third, dfs[3].drop_duplicates(["Datum", "BaustelleID"], keep='last'), how="left", on=["Datum", "BaustelleID"], validate="one_to_one")
 
 #%%
-# solution 1 (fast)
-result = pd.concat(dfs, join='left', axis=1).fillna(nan_value)
+# nan temp with mean
+merged[['Temperatur_mean', 'Temperatur_min', 'Temperatur_max']] = merged[['Temperatur_mean', 'Temperatur_min', 'Temperatur_max']].fillna(merged[['Temperatur_mean', 'Temperatur_min', 'Temperatur_max']].mean())
 
-
-prev = result_1.sample(20)
-
-first = dfs[0].merge(dfs[1], how="left", right_on=["Datum", "BaustelleID"], left_on=["Datum", "Projekt Id"])
-
-first = pd.merge(dfs[0], dfs[1], how="left", left_on=["Datum", "Projekt Id"], right_on=["Datum", "BaustelleID"])
+#%%
+# fill nan with zero
+merged = merged.fillna(0)
 
 
