@@ -129,3 +129,10 @@ dmypy.json
 .pyre/
 
 data/
+# logs
+*.png
+*.csv
+*.h5
+*.xlsx
+*.ipynb
+*.json
