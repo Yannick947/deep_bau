@@ -37,4 +37,5 @@ merged[['Temperatur_mean', 'Temperatur_min', 'Temperatur_max']] = merged[['Tempe
 # fill nan with zero
 merged = merged.fillna(0)
 
-
+#%%
+merged.to_csv(ROOT_PATH + "df_deep_bau.csv")
