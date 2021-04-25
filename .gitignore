@@ -136,3 +136,10 @@ data/
 *.xlsx
 *.ipynb
 *.json
+
+*.gz
+*.pb
+*.v2
+untitled_project/
+hyperband_runs/
+*.profile-empty

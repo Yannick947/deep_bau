@@ -2,7 +2,7 @@ import os
 import matplotlib.pyplot as plt
 
 
-def plot_history(history: dict, logging_path: str):
+def plot_history(history: dict, logging_path: str, show: bool = True):
     # summarize history for accuracy
     plt.plot(history.history['mean_absolute_error'])
     plt.plot(history.history['val_mean_absolute_error'])
@@ -10,8 +10,10 @@ def plot_history(history: dict, logging_path: str):
     plt.ylabel('MAE')
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
-    plt.show()
+    if show:
+        plt.show()
     plt.savefig(os.path.join(logging_path, 'mae.png'))
+    plt.close()
 
     # summarize history for loss
     plt.plot(history.history['loss'])
@@ -20,5 +22,7 @@ def plot_history(history: dict, logging_path: str):
     plt.ylabel('loss')
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
-    plt.show()
+    if show:
+        plt.show()
     plt.savefig(os.path.join(logging_path, 'loss.png'))
+    plt.close()
