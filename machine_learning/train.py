@@ -12,7 +12,7 @@ from machine_learning.data_generator import BauGenerator
 from visualizations.plot_utils import plot_history
 
 BATCH_SIZE = 32
-LOOK_AHEAD_SIZE = 5
+LOOK_AHEAD_SIZE = 1
 LOOK_BACK_WINDOW_SIZE = 10
 
 
@@ -53,11 +53,13 @@ def train(df: pd.DataFrame):
                          num_output_fields=datagen_train.Y_batches.shape[2],
                          look_ahead_size=LOOK_AHEAD_SIZE,
                          window_size=LOOK_BACK_WINDOW_SIZE,
-                         weight_decay_recurrent=0.0,
-                         weight_decay_kernel=0.0,
-                         recurrent_dropout=0.0,
-                         kernel_dropout=0.0,
-                         num_neurons=64)
+                         weight_decay_recurrent=5.978522290631339e-06,
+                         weight_decay_kernel=3.231036168814117e-06,
+                         recurrent_dropout=0.01,
+                         kernel_dropout=0.01770356772875606,
+                         num_neurons=80,
+                         learning_rate=0.01,
+                         loss='msle')
 
     logging_path = os.path.join(ROOT_PATH, 'logs', str(
         datetime.now().strftime("%d%H%M%S")))

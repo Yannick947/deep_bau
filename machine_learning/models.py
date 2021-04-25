@@ -12,17 +12,18 @@ HYPER_LOOK_AHEAD_SIZE = 5
 
 
 def create_hyperband_model(hp):
-    kernel_dropout = hp.Float('kernel_dropout', 0.01, 0.3, sampling='log')
+    kernel_dropout = hp.Float('kernel_dropout', 1e-6, 0.3, sampling='log')
     recurrent_dropout = hp.Float(
-        'recurrent_dropout', 0.01, 0.4, sampling='log')
+        'recurrent_dropout', 1e-6, 0.4, sampling='log')
     #second_layer = hp.Choice('second_lstm_layer', [True, False])
     weight_decay_kernel = hp.Float(
         'weight_decay_kernel', 1e-6, 1e-3, sampling='log')
     weight_decay_recurrent = hp.Float(
         'weight_decay_recurrent', 1e-6, 1e-3, sampling='log')
-    num_neurons = hp.Int('num_neurons', 8, 128, step=8)
+    num_neurons = hp.Int('num_neurons', 4, 32, step=4)
     learning_rate = hp.Float(
         'learning_rate', 1e-4, 1e-2, sampling='log')
+    loss = hp.Choice('loss', ['mse', 'mean_squared_logarithmic_error'])
 
     model = create_model(num_rows_df=HYPER_NUM_ROWS_DF,
                          num_output_fields=HYPER_NUM_OUTPUT_FIELDS,
@@ -34,7 +35,8 @@ def create_hyperband_model(hp):
                          kernel_dropout=kernel_dropout,
                          recurrent_dropout=recurrent_dropout,
                          second_lstm_layer=False,
-                         learning_rate=learning_rate)
+                         learning_rate=learning_rate,
+                         loss=loss)
     return model
 
 
@@ -48,17 +50,18 @@ def create_model(num_rows_df: int,
                  kernel_dropout: float = 0.1,
                  recurrent_dropout: float = 0.3,
                  second_lstm_layer: bool = False,
-                 learning_rate: float = 0.01):
+                 learning_rate: float = 0.01,
+                 loss: str = 'mse'):
 
     input_layer = Input(shape=(window_size, num_rows_df))
-
+    norm = tf.keras.layers.LayerNormalization()(input_layer)
     encoder = LSTM(num_neurons,
                    recurrent_regularizer=regularizers.l2(
                        weight_decay_recurrent),
                    kernel_regularizer=regularizers.l2(weight_decay_kernel),
                    recurrent_dropout=recurrent_dropout,
                    dropout=kernel_dropout,
-                   return_sequences=second_lstm_layer)(input_layer)
+                   return_sequences=second_lstm_layer)(norm)
 
     if second_lstm_layer:
         encoder = LSTM(num_neurons,
@@ -80,7 +83,7 @@ def create_model(num_rows_df: int,
         Dense(num_output_fields, activation='relu'))(decoder)
 
     model = Model(inputs=input_layer, outputs=pred)
-    model.compile(optimizer=Adam(learning_rate=learning_rate), loss='mae',
+    model.compile(optimizer=Adam(learning_rate=learning_rate), loss=loss,
                   metrics=[MeanAbsoluteError(reduction=tf.keras.losses.Reduction.SUM)])
     model.summary()
     return model
