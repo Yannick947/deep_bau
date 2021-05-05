@@ -5,12 +5,13 @@ Created on Sat Apr 24 11:06:40 2021
 
 @author: tquentel
 """
-#%%
+
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 import aggregations as agg
-#%%
-df = pd.read_csv("/home/tquentel/projects/SDaCathon/erfassungsdaten/geraete.csv")
+
+df = pd.read_csv(
+    "/home/tquentel/projects/SDaCathon/erfassungsdaten/geraete.csv")
 
 projekt = "BaustelleID"
 
@@ -22,29 +23,31 @@ df.reset_index()
 
 prev = df.head(20)
 
+
 def one_hot_col(df_obj, col):
     one_hot = OneHotEncoder()
-    obj_enc = one_hot.fit_transform(df_obj.values.reshape(-1,1)).toarray()
-    df_obj_enc = pd.DataFrame(obj_enc, columns=one_hot.get_feature_names([col]))
-    
+    obj_enc = one_hot.fit_transform(df_obj.values.reshape(-1, 1)).toarray()
+    df_obj_enc = pd.DataFrame(
+        obj_enc, columns=one_hot.get_feature_names([col]))
+
     return df_obj_enc
 
-#%%
+
 cols = ["Datum", projekt, "GeraetID", "Anzahl"]
 df = df[cols]
 
-#%%
 
 df = agg.one_hot_taetigkeiten(df)
 df = agg.replace_taetigkeiten_working_hours(df)
-#%%
+
 prev = df.head(20)
 
-#%%
+
 day = df.groupby(["Datum", projekt]).sum()
 
 # all one-hot columns
-one_hot_columns = df.filter(regex='GeraetID_|Baubereich_|Person_').columns.to_list()
+one_hot_columns = df.filter(
+    regex='GeraetID_|Baubereich_|Person_').columns.to_list()
 
 day = day[one_hot_columns]
 
