@@ -3,7 +3,11 @@ from tensorflow.keras.models import Model
 from tensorflow.keras import regularizers
 from tensorflow.keras.optimizers import Adam
 import tensorflow as tf
+from tensorflow import keras
 from tensorflow.keras.losses import MeanAbsoluteError
+from tensorflow.python.keras.layers.core import Dropout
+from tensorflow.python.keras.layers.recurrent import GRU
+from tensorflow.keras import metrics
 
 HYPER_NUM_ROWS_DF = None
 HYPER_NUM_OUTPUT_FIELDS = None
@@ -12,18 +16,18 @@ HYPER_LOOK_AHEAD_SIZE = 5
 
 
 def create_hyperband_model(hp):
-    kernel_dropout = hp.Float('kernel_dropout', 1e-6, 0.3, sampling='log')
+    kernel_dropout = hp.Float('kernel_dropout', 0.0, 0.3, sampling='linear')
     recurrent_dropout = hp.Float(
-        'recurrent_dropout', 1e-6, 0.4, sampling='log')
-    #second_layer = hp.Choice('second_lstm_layer', [True, False])
-    weight_decay_kernel = hp.Float(
-        'weight_decay_kernel', 1e-6, 1e-3, sampling='log')
-    weight_decay_recurrent = hp.Float(
-        'weight_decay_recurrent', 1e-6, 1e-3, sampling='log')
-    num_neurons = hp.Int('num_neurons', 4, 32, step=4)
+        'recurrent_dropout', 0.0, 0.3, sampling='linear')
+    second_layer = hp.Choice('second_lstm_layer', [False, True])
+    weight_decay_kernel = hp.Choice(
+        'weight_decay_kernel', [0.0, 1e-5, 1e-3])
+    weight_decay_recurrent = hp.Choice('weight_decay_recurrent',
+                                       [0.0, 1e-5, 1e-3])
+    num_neurons = hp.Int('num_neurons', 16, 64, step=8)
     learning_rate = hp.Float(
-        'learning_rate', 1e-4, 1e-2, sampling='log')
-    loss = hp.Choice('loss', ['mse', 'mean_squared_logarithmic_error'])
+        'learning_rate', 1e-3, 5e-2, sampling='linear')
+    loss = hp.Choice('loss', ['binary_accuracy', 'accuracy'])
 
     model = create_model(num_rows_df=HYPER_NUM_ROWS_DF,
                          num_output_fields=HYPER_NUM_OUTPUT_FIELDS,
@@ -34,7 +38,7 @@ def create_hyperband_model(hp):
                          weight_decay_recurrent=weight_decay_recurrent,
                          kernel_dropout=kernel_dropout,
                          recurrent_dropout=recurrent_dropout,
-                         second_lstm_layer=False,
+                         second_lstm_layer=second_layer,
                          learning_rate=learning_rate,
                          loss=loss)
     return model
@@ -54,7 +58,7 @@ def create_model(num_rows_df: int,
                  loss: str = 'mse'):
 
     input_layer = Input(shape=(window_size, num_rows_df))
-    norm = tf.keras.layers.LayerNormalization()(input_layer)
+    norm = keras.layers.LayerNormalization()(input_layer)
     encoder = LSTM(num_neurons,
                    recurrent_regularizer=regularizers.l2(
                        weight_decay_recurrent),
@@ -64,7 +68,7 @@ def create_model(num_rows_df: int,
                    return_sequences=second_lstm_layer)(norm)
 
     if second_lstm_layer:
-        encoder = LSTM(num_neurons,
+        encoder = LSTM(num_neurons // 2,
                        recurrent_regularizer=regularizers.l2(
                            weight_decay_recurrent),
                        kernel_regularizer=regularizers.l2(weight_decay_kernel),
@@ -73,17 +77,13 @@ def create_model(num_rows_df: int,
 
     repeat = RepeatVector(look_ahead_size)(encoder)
     decoder = LSTM(num_neurons,
-                   recurrent_regularizer=regularizers.l2(
-                       weight_decay_recurrent),
-                   kernel_regularizer=regularizers.l2(weight_decay_kernel),
-                   recurrent_dropout=recurrent_dropout,
-                   dropout=kernel_dropout,
                    return_sequences=True)(repeat)
     pred = TimeDistributed(
         Dense(num_output_fields, activation='relu'))(decoder)
 
     model = Model(inputs=input_layer, outputs=pred)
     model.compile(optimizer=Adam(learning_rate=learning_rate), loss=loss,
-                  metrics=[MeanAbsoluteError(reduction=tf.keras.losses.Reduction.SUM)])
+                  metrics=[MeanAbsoluteError(reduction=tf.keras.losses.Reduction.SUM),
+                  'accuracy'])
     model.summary()
     return model
