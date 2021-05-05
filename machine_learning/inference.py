@@ -47,32 +47,31 @@ def reassign_cols(arr: np.ndarray, df_orig: pd.DataFrame) -> pd.DataFrame:
 
 if __name__ == '__main__':
 
-    file_path = "C:/Users/Yannick/Documents/Python/deep_bau/machine_learning/logs/25020236/lstm.h5"
+    file_path = "C:/Users/Yannick/Documents/Python/deep_bau/machine_learning/logs/26120258/lstm.h5"
     model = load_model_from_file(file_path)
 
-    DEBUG_SIZE = 100
+    DEBUG_SIZE = 500
 
     working_hours = pd.read_csv(
-        "./data/preprocessed/df_deep_bau.csv", error_bad_lines=False, sep=',')  # [0:DEBUG_SIZE]
+        "./data/preprocessed/df_deep_bau.csv", error_bad_lines=False, sep=',')[0:DEBUG_SIZE]
     working_hours = working_hours.select_dtypes([np.number])
 
     df_train, df_val = get_datagen_split(working_hours)
 
-    datagen_val = BauGenerator(df=df_val, batch_size=1,
-                               window_size=LOOK_BACK_WINDOW_SIZE,
-                               look_ahead_steps=LOOK_AHEAD_SIZE)
+    datagen_train = BauGenerator(df=df_train, batch_size=1,
+                                 window_size=LOOK_BACK_WINDOW_SIZE,
+                                 look_ahead_steps=LOOK_AHEAD_SIZE)
 
     for i in range(1000):
 
-        window_x, window_y = datagen_val.get_single_item_by_index(i)
+        window_x, window_y = datagen_train.get_single_item_by_index(i)
         window_y_hat = predict_future_vals(model, window_x)
 
         diff = np.sum(np.absolute(window_y_hat - window_y))
         summed = np.sum(window_y)
         print('index: ', i, ' prediction diff: ', diff, ', sum ', summed)
 
-        if diff < 45:
-
+        if diff < summed:
             window_x_actions = get_taetigkeiten_from_arr(
                 window_x, working_hours)
             window_pred_merge = np.concatenate(
