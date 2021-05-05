@@ -31,17 +31,6 @@ AI algorithm to predict future project steps
 - Python backend
 - LSTM encoder-decoder architecture
 
-## Challenges we ran into
-
-Domain knowledge of workers on a site was missing and not to be made up by short calls in times needed for coding.
-Presentation of results from trained process mining algorithms lacking due to non-existent domain knowledge
-Familiarization and understanding of the data lake took longer than expected, as specific features and missing data in tables only became apparent during the course of the project
-Accomplishments that we're proud of
-End to end data processing, application and trained machine learning algorithm in 2 days with 2 people :-)
-What we learned
-Domain knowledge should have been more involved, best with civil engineer in the team
-Time pressure in data preprocessing and loading in data generator for AI model we would pay more attention/time to avoid errors
-
 ## What's next for DeepBau
 
 Direct connection of the api of the datalake to our webapp (currently all existing data is downloaded and loaded from memory)
